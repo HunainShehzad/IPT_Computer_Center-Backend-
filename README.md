@@ -1,58 +1,90 @@
-# ipt-backend
+# IPT Computer Center - Backend
 
-API-only Next.js app for IPT Computer Center. Runs on port **4000**.
+A secure and scalable backend for the IPT Computer Center Management System built with Next.js API Routes and MongoDB.
 
-## Required Environment Variables
+## Features
 
-Create a `.env.local` file in this directory:
+- User Authentication
+- Role-Based Authorization
+- Student Management
+- Teacher Management
+- Batch Management
+- Daily Student Attendance
+- Teacher Attendance
+- Fee Management
+- Salary Management
+- Dashboard Statistics
+- Notifications System
+- Login Activity Tracking
+- Session Management
+- Secure JWT Authentication
+- MongoDB Database Integration
+- REST API Architecture
 
-```
-MONGODB_URI=mongodb+srv://...
-NEXTAUTH_SECRET=<shared-secret>
-NEXTAUTH_URL=http://localhost:4000
-GMAIL_USER=youremail@gmail.com
-GMAIL_APP_PASSWORD=xxxx-xxxx-xxxx-xxxx
-FRONTEND_URL=http://localhost:3000
-ADMIN_PASSWORD=admin123
-```
+## Tech Stack
 
-## Setup & Run
+- Next.js
+- Node.js
+- MongoDB
+- Mongoose
+- JWT Authentication
+- NextAuth
+- bcryptjs
+
+## Installation
 
 ```bash
-# Install dependencies
-npm install
-
-# Development (port 4000)
-npm run dev
-
-# Production
-npm run build
-npm run start
+git clone https://github.com/HunainShehzad/IPT_Computer_Center-Backend-.git
 ```
 
-## API Endpoints
+```bash
+cd IPT_Computer_Center-Backend
+```
 
-| Method | Path | Description |
-|--------|------|-------------|
-| GET | /api/health | Health check |
-| POST | /api/auth/validate | Credential validation |
-| GET/POST | /api/attendance | Attendance records |
-| GET | /api/attendance/report | Attendance report |
-| GET/POST | /api/batches | Batches |
-| PUT/DELETE | /api/batches/[id] | Batch by ID |
-| GET/POST | /api/fees | Fee records |
-| GET | /api/stats | Dashboard stats |
-| GET/POST | /api/students | Students |
-| PUT | /api/students/[id] | Student by ID |
-| GET/POST | /api/teachers | Teachers |
-| PUT/DELETE | /api/teachers/[id] | Teacher by ID |
-| POST/DELETE | /api/teachers/[id]/picture | Teacher photo |
-| GET | /api/teacher/me | Current teacher |
-| POST | /api/teacher/change-password | Change password |
-| POST | /api/auth/forgot-password | OTP password reset |
+```bash
+npm install
+```
 
-## Notes
+Create a `.env.local` file and add your environment variables.
 
-- All protected routes require `Authorization: Bearer <JWT>` header
-- CORS is configured to allow requests from `FRONTEND_URL`
-- The frontend project must run on port 3000 and share the same `NEXTAUTH_SECRET`
+Run the project:
+
+```bash
+npm run dev
+```
+
+## Project Structure
+
+```
+app/
+lib/
+models/
+middleware/
+public/
+```
+
+## API Modules
+
+- Authentication
+- Students
+- Teachers
+- Attendance
+- Batches
+- Fees
+- Salary
+- Notifications
+- Dashboard
+- Login Activity
+- Sessions
+
+## Security
+
+- JWT Authentication
+- Password Encryption
+- Protected Routes
+- Role-Based Access Control
+- Session Validation
+
+## Author
+
+Hunain Shehzad
