@@ -24,7 +24,6 @@ A secure and scalable backend for the IPT Computer Center Management System buil
 ## Tech Stack
 
 - Next.js
-- Node.js
 - MongoDB
 - Mongoose
 - JWT Authentication
