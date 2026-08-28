@@ -10,8 +10,10 @@ export function OPTIONS() {
   return optionsResponse();
 }
 
-// GET /api/attendance?batchId=xxx&date=YYYY-MM-DD
+// GET /api/attendance?batchId=xxx&date=YYYY-MM-DD&studentIds=id1,id2,id3
 // Admin: any batch | Teacher: only assigned batches
+// NEW: Supports studentIds parameter to fetch attendance for specific students
+// If studentIds provided, fetches attendance for those students (ignores batchId for query)
 export async function GET(request) {
   const { token, error } = await requireAuth(request);
   if (error) return error;
@@ -20,20 +22,34 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const batchId = searchParams.get("batchId");
   const date    = searchParams.get("date");
+  const studentIdsParam = searchParams.get("studentIds");
 
-  if (!batchId || !date) {
-    return withCors(NextResponse.json({ error: "batchId and date are required" }, { status: 400 }));
+  if (!date) {
+    return withCors(NextResponse.json({ error: "date is required" }, { status: 400 }));
   }
 
   // Teachers can only read attendance for their assigned batches
-  if (token.role === "teacher") {
+  if (token.role === "teacher" && batchId) {
     const assigned = token.assignedBatches || [];
     if (!assigned.includes(batchId)) {
       return withCors(NextResponse.json({ error: "Access denied to this batch" }, { status: 403 }));
     }
   }
 
-  const records = await Attendance.find({ batchId, date }).lean();
+  let query = { date };
+  
+  if (studentIdsParam) {
+    // Fetch attendance for specific students (regardless of batch)
+    const studentIds = studentIdsParam.split(',');
+    query.studentId = { $in: studentIds };
+  } else if (batchId) {
+    // Backward compatibility: fetch by batchId
+    query.batchId = batchId;
+  } else {
+    return withCors(NextResponse.json({ error: "Either batchId or studentIds is required" }, { status: 400 }));
+  }
+
+  const records = await Attendance.find(query).lean();
   return withCors(NextResponse.json(records));
 }
 

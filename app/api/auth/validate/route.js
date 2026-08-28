@@ -142,8 +142,6 @@ export async function POST(request) {
 
   // ── Admin login ────────────────────────────────────────────────────────
   const adminPassword = process.env.ADMIN_PASSWORD || "";
-  // Timing-parity hash so response time is identical whether username is "admin" or not
-  await bcrypt.hash(adminPassword, 12).catch(() => "");
 
   if (username === "admin") {
     if (password !== adminPassword) {

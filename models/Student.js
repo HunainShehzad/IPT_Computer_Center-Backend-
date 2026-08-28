@@ -38,6 +38,12 @@ const StudentSchema = new mongoose.Schema(
       required: [true, "Decided monthly fee lazmi hai."],
       min: [0, "Fees minus mein nahi ho sakti."],
     },
+    // Student photo stored as a base64 data URI (same pattern as Teacher.profilePicture).
+    // Null means no photo uploaded yet.
+    photo: {
+      type: String,
+      default: null,
+    },
   },
   { timestamps: true }
 );

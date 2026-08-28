@@ -34,8 +34,18 @@ export async function PUT(req, context) {
     }
   }
 
-  // Strip fields that should not be updatable by clients
-  const { batchId, _id, __v, createdAt, ...safeUpdate } = body;
+  // Strip fields that should never be set directly by clients.
+  // batchId is intentionally kept — admins are allowed to move a student
+  // to a different batch via this endpoint.
+  const { _id, __v, createdAt, ...safeUpdate } = body;
+
+  // Teachers cannot reassign a student to a batch outside their own assignments
+  if (safeUpdate.batchId && token.role === "teacher") {
+    const assigned = token.assignedBatches || [];
+    if (!assigned.includes(String(safeUpdate.batchId))) {
+      return withCors(NextResponse.json({ error: "Cannot move student to an unassigned batch" }, { status: 403 }));
+    }
+  }
 
   // Auto-manage leftDate based on status transition:
   // - Going to "left"   → stamp leftDate with today (only if not already set,

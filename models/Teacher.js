@@ -7,7 +7,7 @@ const TeacherSchema = new mongoose.Schema(
     phone: { type: String, required: true, trim: true },
     department: {
       type: String,
-      enum: ["Computer Department", "Language Department"],
+      enum: ["Computer Department", "Language Department", "Coaching Center"],
       required: true,
     },
     assignedBatches: [{ type: mongoose.Schema.Types.ObjectId, ref: "Batch" }],

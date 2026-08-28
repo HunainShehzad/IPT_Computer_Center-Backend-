@@ -10,8 +10,10 @@ export function OPTIONS() {
   return optionsResponse();
 }
 
-// GET /api/fees?batchId=xxx — admin only
+// GET /api/fees?batchId=xxx&studentIds=id1,id2,id3 — admin only
 // Fee management is an admin-only responsibility
+// NEW: Supports studentIds parameter to fetch fees for specific students
+// If studentIds provided, fetches fees for those students (ignores batchId for query)
 export async function GET(request) {
   const { error } = await requireAdmin(request);
   if (error) return error;
@@ -19,12 +21,22 @@ export async function GET(request) {
   await connectDB();
   const { searchParams } = new URL(request.url);
   const batchId = searchParams.get("batchId");
+  const studentIdsParam = searchParams.get("studentIds");
 
-  if (!batchId) {
-    return withCors(NextResponse.json({ error: "batchId is required" }, { status: 400 }));
+  let query = {};
+  
+  if (studentIdsParam) {
+    // Fetch fees for specific students (regardless of batch)
+    const studentIds = studentIdsParam.split(',');
+    query.studentId = { $in: studentIds };
+  } else if (batchId) {
+    // Backward compatibility: fetch by batchId
+    query.batchId = batchId;
+  } else {
+    return withCors(NextResponse.json({ error: "Either batchId or studentIds is required" }, { status: 400 }));
   }
 
-  const fees = await Fee.find({ batchId }).lean();
+  const fees = await Fee.find(query).lean();
   return withCors(NextResponse.json(fees));
 }
 

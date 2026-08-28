@@ -12,8 +12,11 @@ export function OPTIONS() {
 }
 
 // PUT /api/batches/:id — admin only
-// When a batch is marked "completed", all active students in that batch are
-// automatically moved to "left" status.
+// Supports two modes:
+//   1. Status-only update (existing behaviour): { status: "completed"|"active" }
+//      → When completed, all active students are automatically marked as "left".
+//   2. Full info update: { name, timing, status? }
+//      → Updates batch name and/or timing. Students remain unchanged.
 export async function PUT(req, context) {
   const { error } = await requireAdmin(req);
   if (error) return error;
@@ -28,10 +31,34 @@ export async function PUT(req, context) {
       return withCors(NextResponse.json({ error: "Invalid status value" }, { status: 400 }));
     }
 
+    // Build the update object — only include fields that were actually sent
+    const updateFields = {};
+    if (body.name !== undefined) {
+      const trimmed = body.name?.trim();
+      if (!trimmed) {
+        return withCors(NextResponse.json({ error: "Batch name cannot be empty" }, { status: 400 }));
+      }
+      updateFields.name = trimmed;
+    }
+    if (body.timing !== undefined) {
+      const trimmed = body.timing?.trim();
+      if (!trimmed) {
+        return withCors(NextResponse.json({ error: "Batch timing cannot be empty" }, { status: 400 }));
+      }
+      updateFields.timing = trimmed;
+    }
+    if (body.status !== undefined) {
+      updateFields.status = body.status;
+    }
+
+    if (Object.keys(updateFields).length === 0) {
+      return withCors(NextResponse.json({ error: "No valid fields to update" }, { status: 400 }));
+    }
+
     const updated = await Batch.findByIdAndUpdate(
       id,
-      { status: body.status },
-      { new: true }
+      { $set: updateFields },
+      { new: true, runValidators: true }
     );
 
     if (!updated) {
@@ -43,16 +70,23 @@ export async function PUT(req, context) {
     if (body.status === "completed") {
       const result = await Student.updateMany(
         { batchId: id, status: "active" },
-        { status: "left" }
+        { $set: { status: "left", leftDate: new Date() } }
       );
       studentsUpdated = result.modifiedCount ?? 0;
     }
 
+    // Determine the response message
+    const isStatusUpdate = body.status !== undefined && !body.name && !body.timing;
+    const message = isStatusUpdate
+      ? body.status === "completed"
+        ? `Batch completed. ${studentsUpdated} student(s) marked as left.`
+        : "Batch status updated"
+      : "Batch updated successfully";
+
     return withCors(NextResponse.json({
       success: true,
-      message: body.status === "completed"
-        ? `Batch completed. ${studentsUpdated} student(s) marked as left.`
-        : "Batch status updated",
+      message,
+      batch: updated,
       studentsUpdated,
     }));
   } catch (err) {
